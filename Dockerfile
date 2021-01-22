@@ -6,7 +6,8 @@ LABEL org.label-schema.vcs-url="https://github.com/giovtorres/docker-centos6-slu
       org.label-schema.description="Slurm All-in-one Docker container on CentOS 6" \
       maintainer="Giovanni Torres"
 
-ARG SLURM_TAG=slurm-17-11-12-1
+COPY ./CentOS-Base.repo /etc/yum.repos.d/CentOS-Base.repo
+ARG SLURM_TAG=slurm-20-02-6-1
 
 RUN yum makecache fast \
     && yum -y install epel-release \
@@ -27,10 +28,13 @@ RUN yum makecache fast \
         mysql-devel \
         psmisc \
         bash-completion \
+        python34 \
+        python34-devel \
+        python34-pip \
     && yum clean all \
     && rm -rf /var/cache/yum
 
-RUN pip install --upgrade Cython nose supervisor setuptools==36.8.0
+RUN pip install --upgrade Cython nose setuptools==36.8.0 && pip3 install --upgrade supervisor
 
 RUN groupadd -r slurm && useradd -r -g slurm slurm
 
@@ -44,7 +48,7 @@ RUN set -x \
     && make install \
     && install -D -m644 etc/cgroup.conf.example /etc/slurm/cgroup.conf.example \
     && install -D -m644 etc/slurm.conf.example /etc/slurm/slurm.conf.example \
-    && install -D -m644 etc/slurm.epilog.clean /etc/slurm/slurm.epilog.clean \
+    # && install -D -m644 etc/slurm.epilog.clean /etc/slurm/slurm.epilog.clean \
     && install -D -m644 etc/slurmdbd.conf.example /etc/slurm/slurmdbd.conf.example \
     && install -D -m644 contribs/slurm_completion_help/slurm_completion.sh /etc/profile.d/slurm_completion.sh \
     && popd \
